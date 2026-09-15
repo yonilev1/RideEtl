@@ -28,7 +28,7 @@ public class StationStatusHandler
         _db = redis.GetDatabase();
     }
 
-    public async Task ExecuteAsync(StationStatus dto)
+    public async Task HandleAsync(StationStatus dto)
     {
         var entity = new StationStatusDto
         {
