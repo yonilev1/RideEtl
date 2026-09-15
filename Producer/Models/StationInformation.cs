@@ -2,6 +2,17 @@
 
 namespace Producer.Models;
 
+public class StationInformationFeedDto
+{
+    [JsonPropertyName("data")]
+    public StationInformationDataDto Data { get; set; } = null!;
+}
+
+public class StationInformationDataDto
+{
+    [JsonPropertyName("stations")]
+    public List<StationInformation> Stations { get; set; } = new List<StationInformation>();
+}
 public class StationInformation
 {
     [JsonPropertyName("station_id")]

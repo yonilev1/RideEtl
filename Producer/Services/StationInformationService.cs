@@ -16,7 +16,7 @@ public class StationInformationService : BackgroundService
     private readonly IHttpClientFactory _httpFactory;
     private HttpClient _client;
     private readonly KafkaProducerService _producer;
-    private readonly string  _topic = "station.information-topic";
+    private readonly string  _topic = "bike.station-information";
     private readonly ILogger<StationInformationService> _logger;
 
     public StationInformationService(IHttpClientFactory httpFactory,
