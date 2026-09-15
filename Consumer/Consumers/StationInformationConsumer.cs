@@ -3,6 +3,7 @@ using Consumer.Handlers;
 using Consumer.Models;
 using DnsClient.Internal;
 using DnsClient.Protocol;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -25,15 +26,16 @@ public class StationInformationConsumer : BackgroundService
     private readonly IConsumer<Null, string> _consumer;
     private readonly string _topic = "bike.station-information";
     
-    public StationInformationConsumer(ILogger<StationInformationConsumer> logger, IServiceScopeFactory scopeFactory, string bootstrapServer)
+    public StationInformationConsumer(ILogger<StationInformationConsumer> logger, IServiceScopeFactory scopeFactory, IConfiguration configuration)
     {
         _logger = logger;
         _scopeFactory = scopeFactory;
-        _bootstrapServer = bootstrapServer;
+        _bootstrapServer = configuration["Kafka:BootstrapServer"] ?? "localhost:9092"; ;
 
         var config = new ConsumerConfig
         {
             BootstrapServers = _bootstrapServer,
+            GroupId = "station-information-consumer-group",
             AutoOffsetReset = AutoOffsetReset.Earliest
         };
 
@@ -64,7 +66,7 @@ public class StationInformationConsumer : BackgroundService
 
                     await handler.HandleAsync(dto);
 
-                    _logger.LogInformation($"Successfully processed status for station {dto.StationId}");
+                    _logger.LogInformation($"Successfully processed info for station {dto.StationId}");
                 }
                 catch (ConsumeException ex)
                 {
@@ -76,7 +78,8 @@ public class StationInformationConsumer : BackgroundService
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"Unexpected error processing message: {ex.Message}");
+                    // _logger.LogError($"Unexpected error processing message: {ex.Message}");
+                    _logger.LogError(ex, "Error processing message in handler");
                 }
             }
         }

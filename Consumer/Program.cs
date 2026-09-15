@@ -31,7 +31,7 @@ IHost host = Host.CreateDefaultBuilder(args)
             ConnectionMultiplexer.Connect("localhost:6379"));
         // MongoDB Registration...
         services.AddSingleton<IMongoClient>(
-            new MongoClient("mongodb://localhost:27017/"));
+            new MongoClient("mongodb://root:root@localhost:27017/"));
 
         // בלוק 3: הנדלרים
         // services.AddScoped<StationStatusHandler>();
@@ -48,5 +48,11 @@ IHost host = Host.CreateDefaultBuilder(args)
         // ...
     })
     .Build();
+
+using(var scoped = host.Services.CreateScope())
+{
+    var dbContext = scoped.ServiceProvider.GetRequiredService<PiplineDbContext>();
+    dbContext.Database.EnsureCreated();
+}
 
 await host.RunAsync();

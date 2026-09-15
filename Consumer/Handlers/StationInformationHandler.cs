@@ -45,7 +45,7 @@ public class StationInformationHandler
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error: {ex.Message}");
+            _logger.LogError(ex, "Error processing station information");
         }
     }
 }

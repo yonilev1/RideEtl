@@ -3,6 +3,7 @@ using Consumer.Handlers;
 using Consumer.Models;
 using DnsClient.Internal;
 using DnsClient.Protocol;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -25,15 +26,17 @@ public class VehicleTypesConsumer : BackgroundService
     private readonly IConsumer<Null, string> _consumer;
     private readonly string _topic = "bike.vehicle-types";
 
-    public VehicleTypesConsumer(ILogger<VehicleTypesConsumer> logger, IServiceScopeFactory scopeFactory, string bootstrapServer)
+    public VehicleTypesConsumer(ILogger<VehicleTypesConsumer> logger, IServiceScopeFactory scopeFactory, IConfiguration configuration)
     {
         _logger = logger;
         _scopeFactory = scopeFactory;
-        _bootstrapServer = bootstrapServer;
+        _bootstrapServer = configuration["Kafka:BootstrapServer"] ?? "localhost:9092"; ;
+        ;
 
         var config = new ConsumerConfig
         {
             BootstrapServers = _bootstrapServer,
+            GroupId = "vhicle-types-consumer-group",
             AutoOffsetReset = AutoOffsetReset.Earliest
         };
 

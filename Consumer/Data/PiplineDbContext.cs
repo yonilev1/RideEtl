@@ -13,8 +13,8 @@ public class PiplineDbContext : DbContext
         :base(options)
     { }
 
-    public DbSet<StationInformationDto> StationInfo = null!;
-    public DbSet<VehicleTypeDto> VehicleTypes = null!;
+    public DbSet<StationInformationDto> StationInfo { get; set; }
+    public DbSet<VehicleTypeDto> VehicleTypes{ get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
