@@ -1,4 +1,6 @@
 ﻿using Consumer.Models;
+using MongoDB.Bson;
+using MongoDB.Driver;
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
@@ -13,10 +15,16 @@ public class StationStatusHandler
 {
     //private readonly ConnectionMultiplexer _redis;
     private readonly IDatabase _db;
+    //private readonly string uri = "mongodb://localhost:27017/";
+    private readonly IMongoClient _client;
+    private readonly IMongoDatabase _mongoDb;
 
-    public StationStatusHandler(IConnectionMultiplexer redis)
+    public StationStatusHandler(IConnectionMultiplexer redis, IMongoClient client)
     {
-        //_redis = ConnectionMultiplexer.Connect("localhost:6379"); ;
+        //_redis = ConnectionMultiplexer.Connect("localhost:6379");
+
+        _client = client;
+        _mongoDb = _client.GetDatabase("stationsStatusDb");
         _db = redis.GetDatabase();
     }
 
@@ -39,7 +47,8 @@ public class StationStatusHandler
         if (exists != stringEntity)
         {
             await _db.StringSetAsync(entity.StationId, stringEntity);
-            //TODO - store in mongo
+            var coll = _mongoDb.GetCollection<StationStatusDto>("stationCollection");
+            await coll.InsertOneAsync(entity);
         }
     }
 }
