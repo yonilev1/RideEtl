@@ -15,17 +15,8 @@ public class StationStatusDto
     [JsonPropertyName("num_bikes_available")]
     public int NumBikesAvailable { get; set; }
 
-    [JsonPropertyName("num_bikes_disabled")]
-    public int NumBikesDisabled { get; set; }
-
     [JsonPropertyName("num_docks_available")]
     public int NumDocksAvailable { get; set; }
-
-    [JsonPropertyName("num_docks_disabled")]
-    public int NumDocksDisabled { get; set; }
-
-    [JsonPropertyName("is_installed")]
-    public int IsInstalled { get; set; }
 
     [JsonPropertyName("is_renting")]
     public int IsRenting { get; set; }
@@ -35,10 +26,4 @@ public class StationStatusDto
 
     [JsonPropertyName("last_reported")]
     public long LastReported { get; set; }
-
-    [JsonPropertyName("vehicle_types_available")]
-    public List<VehicleTypeAvailableDto>? VehicleTypesAvailable { get; set; }
-
-    [JsonPropertyName("num_ebikes_available")]
-    public int NumEbikesAvailable { get; set; }
 }
