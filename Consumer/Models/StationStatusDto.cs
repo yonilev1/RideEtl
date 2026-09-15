@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Consumer.Models;
 
-public class StationStatus
+public class StationStatusDto
 {
     [JsonPropertyName("station_id")]
     public string StationId { get; set; } = string.Empty;
@@ -41,13 +41,4 @@ public class StationStatus
 
     [JsonPropertyName("num_ebikes_available")]
     public int NumEbikesAvailable { get; set; }
-}
-
-public class VehicleTypeAvailableDto
-{
-    [JsonPropertyName("vehicle_type_id")]
-    public string VehicleTypeId { get; set; } = string.Empty;
-
-    [JsonPropertyName("count")]
-    public int Count { get; set; }
 }

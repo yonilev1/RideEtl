@@ -1,11 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using O.Models;
+using Consumer.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Consumer.Models;
 namespace Consumer.Data;
 
 public class PiplineDbContext : DbContext
@@ -14,17 +13,17 @@ public class PiplineDbContext : DbContext
         :base(options)
     { }
 
-    public DbSet<StationInformation> StationInfo = null!;
-    public DbSet<VehicleType> VehicleTypes = null!;
+    public DbSet<StationInformationDto> StationInfo = null!;
+    public DbSet<VehicleTypeDto> VehicleTypes = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<StationInformation>().
+        modelBuilder.Entity<StationInformationDto>().
             HasKey(s => s.StationId);
 
-        modelBuilder.Entity<VehicleType>()
+        modelBuilder.Entity<VehicleTypeDto>()
             .HasKey(s => s.VehicleTypeId);
     }
 }
