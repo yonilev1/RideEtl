@@ -26,7 +26,7 @@ public class StationStatusService : BackgroundService
         _logger = logger;
         _httpFactory = httpFactory;
         _producer = producer;
-        _client = _httpFactory.CreateClient();
+        _client = _httpFactory.CreateClient("GbfsClient");
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -37,13 +37,17 @@ public class StationStatusService : BackgroundService
         {
             try
             {
-                var response = await _client.GetAsync("https://gbfs.lyft.com/gbfs/2.3/bkn/en/station_status.json");
+                var response = await _client.GetAsync("station_status.json", stoppingToken);
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    StationInformation diserilized = JsonSerializer.Deserialize<StationStatus>(content);
-                    if (IsValidData(diserilized))
-                        await _producer.SendAsync(_topic, diserilized);
+                    StationStatus deserialized = JsonSerializer.Deserialize<StationStatus>(content);
+                    foreach (StationStatusDto station in deserialized.Data.Stations)
+                    {
+                        if (IsValidData(station))
+                            await _producer.SendAsync(_topic, station);
+
+                    }
                 }
             }
             catch (Exception ex)
@@ -54,29 +58,29 @@ public class StationStatusService : BackgroundService
         }
     }
 
-    private bool IsValidData(StationStatus data)
+    private bool IsValidData(StationStatusDto data)
     {
         if (string.IsNullOrEmpty(data.StationId))
         {
-            _logger.LogError($"Data rejected - Station {data.Name} Id does not exist.");
+            _logger.LogError($"Data rejected - Id does not exist.");
             return false;
         }
 
-        if (data.Lat > 90 || data.Lat < -90)
+        if (data.NumDocksAvailable < 0)
         {
-            _logger.LogError($"Data rejected - Station {data.StationId} Lat not in range -90 To 90.");
+            _logger.LogError($"Data rejected - Station {data.StationId} number of avalible docs shoulde be non negitive.");
             return false;
         }
 
-        if (data.Lon > 180 || data.Lon < -180)
+        if (data.NumBikesAvailable < 0)
         {
-            _logger.LogError($"Data rejected - Station {data.StationId} Lon not in range -180 To 180.");
+            _logger.LogError($"Data rejected - Station {data.StationId} number of avalible biks shoulde be non negitive.");
             return false;
         }
 
-        if (data.Capacity < 0)
+        if (data.NumEbikesAvailable < 0)
         {
-            _logger.LogError($"Data rejected - Station {data.StationId} Capacity cant be negitive.");
+            _logger.LogError($"Data rejected - Station {data.StationId} number of avalible Ebiks shoulde be non negitive.");
             return false;
         }
 

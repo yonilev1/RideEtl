@@ -8,19 +8,17 @@ using System.Threading.Tasks;
 namespace Producer.Models;
 
 public class StationStatus
-{{
+{
     [JsonPropertyName("data")]
     public StationStatusDataDto Data { get; set; }
 }
 
-// 2. מחלקת הנתונים שמכילה את רשימת התחנות
 public class StationStatusDataDto
 {
     [JsonPropertyName("stations")]
     public List<StationStatusDto> Stations { get; set; } = new List<StationStatusDto>();
 }
 
-// 3. מחלקת התחנה עצמה
 public class StationStatusDto
 {
     [JsonPropertyName("station_id")]

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Producer.Models;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -26,35 +27,53 @@ public class StationInformationService : BackgroundService
         _logger = logger;
         _httpFactory = httpFactory;
         _producer = producer;
-        _client = _httpFactory.CreateClient();
+        _client = _httpFactory.CreateClient("GbfsClient");
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         using var timer = new PeriodicTimer(TimeSpan.FromHours(1));
 
-        while (await timer.WaitForNextTickAsync(stoppingToken))
+        do
         {
             try
             {
-                var response = await _client.GetAsync("https://gbfs.lyft.com/gbfs/2.3/bkn/en/station_information.json");
+                var response = await _client.GetAsync("station_information.json", stoppingToken);
+
                 if (response.IsSuccessStatusCode)
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    StationInformation diserilized = JsonSerializer.Deserialize<StationInformation>(content);
-                    if (IsValidData(diserilized))
-                        await _producer.SendAsync(_topic, diserilized);
+                    var content = await response.Content.ReadAsStringAsync(stoppingToken);
+                    var deserialized = JsonSerializer.Deserialize<StationInformation>(content);
+
+                    if (deserialized?.Data?.Stations != null)
+                    {
+                        foreach (StationInformationFeedDto station in deserialized.Data.Stations)
+                        {
+                            if (IsValidData(station))
+                            {
+                                await _producer.SendAsync(_topic, station);
+                            }
+                        }
+                    }
                 }
+                else
+                {
+                    _logger.LogWarning($"Failed to fetch data. Status code: {response.StatusCode}");
+                }
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Error while deserializing data.");
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error fetching status: {ex.Message}");
-                Console.WriteLine($"Error fetching status: {ex.Message}");
+                _logger.LogError(ex, "Error fetching station information.");
             }
         }
+        while (await timer.WaitForNextTickAsync(stoppingToken));
     }
 
-    private bool IsValidData(StationInformation data)
+    private bool IsValidData(StationInformationFeedDto data)
     {
         if (string.IsNullOrEmpty(data.StationId))
         { 
