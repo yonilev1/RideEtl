@@ -2,7 +2,7 @@
 
 namespace Consumer.Models;
 
-public class StationInformation
+public class StationInformationDto
 {
     public string StationId { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
