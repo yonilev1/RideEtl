@@ -68,4 +68,37 @@ public class GetDataService : IGetDataService
         }
         return fullStations;
     }
+
+    public async Task<FullStationDto?> GetStationById(string stationId)
+    {
+        var builder = Builders<StationStatusDto>.Filter;
+        var filter = builder.Empty;
+        filter &= builder.Eq(s => s.StationId, stationId);
+        var coll = _mongoDb.GetCollection<StationStatusDto>("stationCollection");
+        var filteredStatusById = await coll.Find(filter)
+            .SortByDescending(s => s.LastReported)
+            .FirstOrDefaultAsync();
+
+        var filteredStationById = await _context.StationInfo.FirstOrDefaultAsync(s => s.StationId == stationId);
+        if (filteredStationById == null || filteredStatusById == null)
+            return null;
+
+        FullStationDto station = new FullStationDto
+        {
+            StationId = filteredStationById.StationId,
+            Name = filteredStationById.Name,
+            Capacity = filteredStationById.Capacity,
+            Lon = filteredStationById.Lon,
+            Lat = filteredStationById.Lat,
+            NumBikesAvailable = filteredStatusById.NumBikesAvailable,
+            NumDocksAvailable = filteredStatusById.NumDocksAvailable,
+            IsRenting = filteredStatusById.IsRenting,
+            IsReturning = filteredStatusById.IsReturning
+        };
+        return station;
+
+
+
+
+    }
 }
