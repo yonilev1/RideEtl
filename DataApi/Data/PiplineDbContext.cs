@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Consumer.Models;
+using DataApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-namespace Consumer.Data;
+namespace DataApi.Data;
 
 public class PiplineDbContext : DbContext
 {

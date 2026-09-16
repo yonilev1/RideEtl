@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Consumer.Models;
+namespace DataApi.Models;
 
 public class StationInformationDto
 {

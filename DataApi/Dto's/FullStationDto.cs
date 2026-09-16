@@ -11,7 +11,6 @@ public class FullStationDto
     public int Capacity { get; set; }
     public int NumBikesAvailable { get; set; }
     public int NumDocksAvailable { get; set; }
-    public string Status { get; set; } = string.Empty;
     public int IsRenting { get; set; }
     public int IsReturning { get; set; }
 }
