@@ -1,6 +1,5 @@
-﻿namespace DataApi.Service
+﻿namespace DataApi.Service;
+
+public class SqlData
 {
-    public class SqlData
-    {
-    }
 }
