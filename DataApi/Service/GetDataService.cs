@@ -1,11 +1,12 @@
 ﻿using DataApi.Data;
+using DataApi.Dto_s;
 using DataApi.Dtos;
 using DataApi.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using MongoDB.Driver;
-using System.Diagnostics;
 using StackExchange.Redis;
+using System.Diagnostics;
 using System.Text.Json;
 namespace DataApi.Service;
 
@@ -96,5 +97,30 @@ public class GetDataService : IGetDataService
             IsReturning = filteredStatusById.IsReturning
         };
         return station;
+    }
+
+    public async Task<FullStationsStatusDto?> GetStationStatusById(string stationId)
+    {
+        var builder = Builders<StationStatusDto>.Filter;
+        var filter = builder.Empty;
+        filter &= builder.Eq(s => s.StationId, stationId);
+        var coll = _mongoDb.GetCollection<StationStatusDto>("stationCollection");
+        var filteredStatusById = await coll.Find(filter)
+            .SortByDescending(s => s.LastReported)
+            .FirstOrDefaultAsync();
+
+        if (filteredStatusById == null)
+            return null;
+
+        FullStationsStatusDto status = new FullStationsStatusDto
+        {
+            StationId = filteredStatusById.StationId,
+            NumBikesAvailable = filteredStatusById.NumBikesAvailable,
+            NumDocksAvailable = filteredStatusById.NumDocksAvailable,
+            IsRenting = filteredStatusById.IsRenting,
+            IsReturning = filteredStatusById.IsReturning,
+            LastReported = filteredStatusById.LastReported
+        };
+        return status;
     }
 }

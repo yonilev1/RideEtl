@@ -1,5 +1,6 @@
 
 
+using DataApi.Dto_s;
 using DataApi.Dtos;
 using DataApi.Service;
 using Microsoft.AspNetCore.Mvc;
@@ -32,5 +33,15 @@ public class StationsController : ControllerBase
         if (station == null)
             return NotFound();
         return Ok(station);
+    }
+
+    [HttpGet("{stationId}/status")]
+    public async Task<ActionResult<FullStationsStatusDto?>> GetStationStatusById(string stationId)
+    {
+        var status = await _repo.GetStationStatusById(stationId);
+
+        if (status == null)
+            return NotFound();
+        return Ok(status);
     }
 }
