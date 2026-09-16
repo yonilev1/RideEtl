@@ -96,9 +96,5 @@ public class GetDataService : IGetDataService
             IsReturning = filteredStatusById.IsReturning
         };
         return station;
-
-
-
-
     }
 }

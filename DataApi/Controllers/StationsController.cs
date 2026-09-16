@@ -23,4 +23,14 @@ public class StationsController : ControllerBase
     {
         return Ok(await _repo.FilterStation(minAvailableBikes, isRenting, isRerurning));
     }
+
+    [HttpGet("{stationId}")]
+    public async Task<ActionResult<FullStationDto?>> GetStationById(string stationId)
+    {
+        var station = await _repo.GetStationById(stationId);
+
+        if (station == null)
+            return NotFound();
+        return Ok(station);
+    }
 }
