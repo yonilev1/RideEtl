@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Consumer.Migrations
 {
     [DbContext(typeof(PiplineDbContext))]
-    [Migration("20260915143826_InitialCreate")]
+    [Migration("20260916061054_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

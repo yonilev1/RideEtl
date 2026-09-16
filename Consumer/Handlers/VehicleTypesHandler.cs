@@ -44,7 +44,7 @@ public class VehicleTypesHandler
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error: {ex.Message}");
+            _logger.LogError(ex, "Error in VehicleTypesHandler");
         }
     }
 }
