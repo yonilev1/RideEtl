@@ -1,3 +1,5 @@
 <Solution>
+  <Project Path="Consumer/Consumer.csproj" />
+  <Project Path="DataApi/DataApi.csproj" />
   <Project Path="Producer/Producer.csproj" />
 </Solution>
