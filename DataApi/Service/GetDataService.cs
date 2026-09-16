@@ -124,7 +124,8 @@ public class GetDataService : IGetDataService
         return status;
     }
 
-    public async Task<IEnumerable<GetByTimeDto>> GetStatusHistory(string stationId, DateTime? from, DateTime? to, int? limit)
+    public async Task<IEnumerable<GetByTimeDto>> GetStatusHistory(string stationId, DateTime? from,
+        DateTime? to, int? limit)
     {
         List<GetByTimeDto> statusHistry = new List<GetByTimeDto>();
         var builder = Builders<StationStatusDto>.Filter;
@@ -161,5 +162,35 @@ public class GetDataService : IGetDataService
                 });
         }
         return statusHistry;
+    }
+
+    public async Task<DashboardDto> GetSystemDashboard()
+    {
+        var stationIds = await _context.StationInfo.Select(s => s.StationId).ToListAsync();
+
+        var redisKeys = stationIds.Select(id => (RedisKey)id).ToArray();
+
+        var redisValues = await _db.StringGetAsync(redisKeys);
+
+        var currentStatus = new List<StationStatusDto>();
+
+        foreach(var val in redisValues)
+        {
+            if(val.HasValue)
+            {
+                var status = JsonSerializer.Deserialize<StationStatusDto>(val);
+                currentStatus.Add(status);
+            }
+        }
+
+        var Dashboard = new DashboardDto
+        {
+            TotalStations = _context.StationInfo.Count(),
+            EmptyStations = currentStatus.Count(s => s.NumBikesAvailable == 0),
+            FullStations = currentStatus.Count(s => s.NumDocksAvailable == 0),
+            lowAvailabilityStations = currentStatus.Count(s => s.NumBikesAvailable < 10 && s.NumBikesAvailable > 0),
+            outOfServiceStations = currentStatus.Count(s => s.IsRenting == 0 && s.IsReturning == 0)
+        };
+        return Dashboard;
     }
 }

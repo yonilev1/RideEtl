@@ -9,5 +9,6 @@ public interface IGetDataService
     Task<FullStationDto?> GetStationById(string stationId);
     Task<FullStationsStatusDto?> GetStationStatusById(string stationId);
     Task<IEnumerable<GetByTimeDto>> GetStatusHistory(string stationId, DateTime? from, DateTime? to, int? limit);
+    Task<DashboardDto> GetSystemDashboard();
 
 }

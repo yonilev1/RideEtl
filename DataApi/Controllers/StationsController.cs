@@ -50,4 +50,10 @@ public class StationsController : ControllerBase
     {
         return Ok(await _repo.GetStatusHistory(stationId, from, to, limit));
     }
+
+    [HttpGet("dashboard")]
+    public async Task<ActionResult<DashboardDto>> GetSystemDashboard()
+    {
+        return Ok(await _repo.GetSystemDashboard());
+    }
 }
