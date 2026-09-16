@@ -8,5 +8,6 @@ public interface IGetDataService
     Task<IEnumerable<FullStationDto>> FilterStation(int? minAvailableBikes, int? isRenting, int? isRerurning);
     Task<FullStationDto?> GetStationById(string stationId);
     Task<FullStationsStatusDto?> GetStationStatusById(string stationId);
+    Task<IEnumerable<GetByTimeDto>> GetStatusHistory(string stationId, DateTime? from, DateTime? to, int? limit);
 
 }

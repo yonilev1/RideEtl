@@ -17,6 +17,7 @@ public class GetDataService : IGetDataService
     private readonly IMongoClient _client;
     private readonly IMongoDatabase _mongoDb;
     private readonly StackExchange.Redis.IDatabase _db;
+    private readonly IMongoCollection<StationStatusDto> _collection;
 
     public GetDataService(PiplineDbContext context,
         ILogger<GetDataService> logger,
@@ -27,6 +28,7 @@ public class GetDataService : IGetDataService
         _logger = logger;
         _client = client;
         _mongoDb = _client.GetDatabase("stationsStatusDb");
+        _collection = _mongoDb.GetCollection<StationStatusDto>("stationCollection");
         _db = redis.GetDatabase();
     }
 
@@ -75,8 +77,7 @@ public class GetDataService : IGetDataService
         var builder = Builders<StationStatusDto>.Filter;
         var filter = builder.Empty;
         filter &= builder.Eq(s => s.StationId, stationId);
-        var coll = _mongoDb.GetCollection<StationStatusDto>("stationCollection");
-        var filteredStatusById = await coll.Find(filter)
+        var filteredStatusById = await _collection.Find(filter)
             .SortByDescending(s => s.LastReported)
             .FirstOrDefaultAsync();
 
@@ -104,8 +105,7 @@ public class GetDataService : IGetDataService
         var builder = Builders<StationStatusDto>.Filter;
         var filter = builder.Empty;
         filter &= builder.Eq(s => s.StationId, stationId);
-        var coll = _mongoDb.GetCollection<StationStatusDto>("stationCollection");
-        var filteredStatusById = await coll.Find(filter)
+        var filteredStatusById = await _collection.Find(filter)
             .SortByDescending(s => s.LastReported)
             .FirstOrDefaultAsync();
 
@@ -122,5 +122,44 @@ public class GetDataService : IGetDataService
             LastReported = filteredStatusById.LastReported
         };
         return status;
+    }
+
+    public async Task<IEnumerable<GetByTimeDto>> GetStatusHistory(string stationId, DateTime? from, DateTime? to, int? limit)
+    {
+        List<GetByTimeDto> statusHistry = new List<GetByTimeDto>();
+        var builder = Builders<StationStatusDto>.Filter;
+        var filter = builder.Empty;
+
+        filter &= builder.Eq(s => s.StationId, stationId);
+
+        if (from.HasValue)
+        {
+            long longFrom = ((DateTimeOffset)from.Value).ToUnixTimeSeconds();
+            filter &= builder.Gte(s => s.LastReported, longFrom);
+        }
+        if(to.HasValue)
+        {
+            long longTo = ((DateTimeOffset)to.Value).ToUnixTimeSeconds();
+            filter &= builder.Lte(s => s.LastReported, longTo);
+        }
+
+        var query = _collection.Find(filter);
+        
+        if (limit.HasValue)
+            query = query.Limit(limit.Value);
+
+        var result = await query.ToListAsync();
+
+        foreach(var res in result)
+        {
+            statusHistry.Add(
+                new GetByTimeDto
+                {
+                    TimeStamp = res.LastReported,
+                    NumBikesAvailable = res.NumBikesAvailable,
+                    NumDocksAvailable = res.NumDocksAvailable
+                });
+        }
+        return statusHistry;
     }
 }

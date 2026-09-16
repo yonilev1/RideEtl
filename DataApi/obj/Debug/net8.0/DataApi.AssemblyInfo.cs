@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DataApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+591e30256d058a724ee8792ca0639d3c09c4366e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+02fdc6b7352fcff2285a7b71a19a8443f4a4da07")]
 [assembly: System.Reflection.AssemblyProductAttribute("DataApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DataApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

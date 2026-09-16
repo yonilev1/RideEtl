@@ -44,4 +44,10 @@ public class StationsController : ControllerBase
             return NotFound();
         return Ok(status);
     }
+
+    [HttpGet("{stationId}/history")]
+    public async Task<ActionResult<IEnumerable<GetByTimeDto>>> GetStatusHistory(string stationId, DateTime? from, DateTime? to, int? limit)
+    {
+        return Ok(await _repo.GetStatusHistory(stationId, from, to, limit));
+    }
 }
