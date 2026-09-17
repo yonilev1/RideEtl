@@ -2,18 +2,12 @@
 using Consumer.Handlers;
 using Consumer.Models;
 using DnsClient.Internal;
-using DnsClient.Protocol;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using static Confluent.Kafka.ConfigPropertyNames;
+
 
 
 namespace Consumer.Consumers;
@@ -24,13 +18,14 @@ public class StationInformationConsumer : BackgroundService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly string _bootstrapServer;
     private readonly IConsumer<Null, string> _consumer;
-    private readonly string _topic = "bike.station-information";
+    private readonly string _topic;
     
     public StationInformationConsumer(ILogger<StationInformationConsumer> logger, IServiceScopeFactory scopeFactory, IConfiguration configuration)
     {
         _logger = logger;
         _scopeFactory = scopeFactory;
-        _bootstrapServer = configuration["Kafka:BootstrapServer"] ?? "localhost:9092"; ;
+        _bootstrapServer = configuration["Kafka:BootstrapServer"] ?? "localhost:9092";
+        _topic = configuration["Kafka:Topics:StationsInformationTopic"] ?? "bike.station-information";
 
         var config = new ConsumerConfig
         {
@@ -54,17 +49,17 @@ public class StationInformationConsumer : BackgroundService
             {
                 try
                 {
-                    var consume = _consumer.Consume();
+                    var consume = _consumer.Consume(stoppingToken);
                     if (consume == null || consume.Message.Value == null)
                         continue;
 
-                    var jsonMessage = consume.Message.Value;
-                    var dto = JsonSerializer.Deserialize<StationInformationFeedDto>(jsonMessage);
+                    var dto = JsonSerializer.Deserialize<StationInformationFeedDto>(consume.Message.Value);
 
-                    var scope = _scopeFactory.CreateScope();
-                    var handler = scope.ServiceProvider.GetRequiredService<StationInformationHandler>();
-
-                    await handler.HandleAsync(dto);
+                    using (var scope = _scopeFactory.CreateScope())
+                    {
+                        var handler = scope.ServiceProvider.GetRequiredService<StationInformationHandler>();
+                        await handler.HandleAsync(dto);
+                    }
 
                     _logger.LogInformation($"Successfully processed info for station {dto.StationId}");
                 }
@@ -78,7 +73,6 @@ public class StationInformationConsumer : BackgroundService
                 }
                 catch (Exception ex)
                 {
-                    // _logger.LogError($"Unexpected error processing message: {ex.Message}");
                     _logger.LogError(ex, "Error processing message in handler");
                 }
             }
@@ -86,6 +80,10 @@ public class StationInformationConsumer : BackgroundService
         catch (OperationCanceledException)
         {
             _logger.LogInformation("Consumption canceled by the host.");
+        }
+        finally
+        {
+            _consumer.Close();
         }
     }
 }

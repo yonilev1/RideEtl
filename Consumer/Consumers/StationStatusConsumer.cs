@@ -24,13 +24,14 @@ public class StationStatusConsumer : BackgroundService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly string _bootstrapServer;
     private readonly IConsumer<Null, string> _consumer;
-    private readonly string _topic = "bike.station-status";
+    private readonly string _topic;
 
     public StationStatusConsumer(ILogger<StationStatusConsumer> logger, IServiceScopeFactory scopeFactory, IConfiguration configuration)
     {
         _logger = logger;
         _scopeFactory = scopeFactory;
-        _bootstrapServer = configuration["Kafka:BootstrapServer"] ?? "localhost:9092"; ;
+        _bootstrapServer = configuration["Kafka:BootstrapServer"] ?? "localhost:9092";
+        _topic = configuration["Kafka:Topics:StationStatusTopic"] ?? "bike.station-status";
 
         var config = new ConsumerConfig
         {
@@ -58,13 +59,14 @@ public class StationStatusConsumer : BackgroundService
                     if (consume == null || consume.Message.Value == null)
                         continue;
 
-                    var jsonMessage = consume.Message.Value;
-                    var dto = JsonSerializer.Deserialize<StationStatus>(jsonMessage);
+                    var dto = JsonSerializer.Deserialize<StationStatus>(consume.Message.Value);
 
-                    var scope = _scopeFactory.CreateScope();
-                    var handler = scope.ServiceProvider.GetRequiredService<StationStatusHandler>();
+                    using (var scope = _scopeFactory.CreateScope())
+                    {
+                        var handler = scope.ServiceProvider.GetRequiredService<StationStatusHandler>();
+                        await handler.HandleAsync(dto);
+                    }
 
-                    await handler.HandleAsync(dto);
 
                     _logger.LogInformation($"Successfully processed status for station {dto.StationId}");
                 }
@@ -85,6 +87,10 @@ public class StationStatusConsumer : BackgroundService
         catch (OperationCanceledException)
         {
             _logger.LogInformation("Consumption canceled by the host.");
+        }
+        finally
+        {
+            _consumer.Close();
         }
     }
 }
