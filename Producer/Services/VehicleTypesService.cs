@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Producer.Models;
 using System;
@@ -15,17 +16,19 @@ public class VehicleTypesService: BackgroundService
     private readonly IHttpClientFactory _httpFactory;
     private HttpClient _client;
     private readonly KafkaProducerService _producer;
-    private readonly string _topic = "bike.vehicle-types";
+    private readonly string _topic;
     private readonly ILogger<StationStatusService> _logger;
 
     public VehicleTypesService(IHttpClientFactory httpFactory,
         KafkaProducerService producer,
-        ILogger<StationStatusService> logger)
+        ILogger<StationStatusService> logger,
+        IConfiguration configuration)
     {
         _logger = logger;
         _httpFactory = httpFactory;
         _producer = producer;
         _client = _httpFactory.CreateClient("GbfsClient");
+        _topic = configuration["Kafka:Topics:VehicleTypeStatus"] ?? "bike.vehicle-types";
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

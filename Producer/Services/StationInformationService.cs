@@ -1,4 +1,5 @@
 ﻿using Confluent.Kafka;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Producer.Models;
@@ -17,17 +18,19 @@ public class StationInformationService : BackgroundService
     private readonly IHttpClientFactory _httpFactory;
     private HttpClient _client;
     private readonly KafkaProducerService _producer;
-    private readonly string  _topic = "bike.station-information";
+    private readonly string  _topic;
     private readonly ILogger<StationInformationService> _logger;
 
     public StationInformationService(IHttpClientFactory httpFactory,
         KafkaProducerService producer,
-        ILogger<StationInformationService> logger)
+        ILogger<StationInformationService> logger,
+        IConfiguration configuration)
     {
         _logger = logger;
         _httpFactory = httpFactory;
         _producer = producer;
         _client = _httpFactory.CreateClient("GbfsClient");
+        _topic = configuration["Kafka:Topics:StationsInformationTopic"] ?? "bike.station-information";
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

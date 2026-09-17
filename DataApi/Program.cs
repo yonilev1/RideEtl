@@ -36,7 +36,11 @@ builder.Services.AddScoped<IGetDataService, GetDataService>();
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 ConnectionMultiplexer.Connect("localhost:6379"));
 
-var app = builder.Build();
+
+builder.Services.AddHttpClient("NominatimClient", client =>
+{
+    client.DefaultRequestHeaders.Add("User-Agent", "BikeSharingPlatform/1.0");
+}); var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
