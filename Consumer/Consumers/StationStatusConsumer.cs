@@ -30,7 +30,7 @@ public class StationStatusConsumer : BackgroundService
     {
         _logger = logger;
         _scopeFactory = scopeFactory;
-        _bootstrapServer = configuration["Kafka:BootstrapServer"] ?? "localhost:9092";
+        _bootstrapServer = configuration["Kafka:BootstrapServers"] ?? "localhost:9092";
         _topic = configuration["Kafka:Topics:StationStatusTopic"] ?? "bike.station-status";
 
         var config = new ConsumerConfig

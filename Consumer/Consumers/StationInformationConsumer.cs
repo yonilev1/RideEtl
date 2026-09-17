@@ -24,7 +24,7 @@ public class StationInformationConsumer : BackgroundService
     {
         _logger = logger;
         _scopeFactory = scopeFactory;
-        _bootstrapServer = configuration["Kafka:BootstrapServer"] ?? "localhost:9092";
+        _bootstrapServer = configuration["Kafka:BootstrapServers"] ?? "localhost:9092";
         _topic = configuration["Kafka:Topics:StationsInformationTopic"] ?? "bike.station-information";
 
         var config = new ConsumerConfig

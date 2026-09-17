@@ -3,10 +3,8 @@ using DataApi.Dto_s;
 using DataApi.Dtos;
 using DataApi.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using MongoDB.Driver;
 using StackExchange.Redis;
-using System.Diagnostics;
 using System.Text.Json;
 namespace DataApi.Service;
 

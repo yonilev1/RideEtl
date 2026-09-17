@@ -30,7 +30,7 @@ public class VehicleTypesConsumer : BackgroundService
     {
         _logger = logger;
         _scopeFactory = scopeFactory;
-        _bootstrapServer = configuration["Kafka:BootstrapServer"] ?? "localhost:9092";
+        _bootstrapServer = configuration["Kafka:BootstrapServers"] ?? "localhost:9092";
         _topic = configuration["Kafka:Topics:VehicleTypeStatus"] ?? "bike.vehicle-types";
 
         var config = new ConsumerConfig
@@ -86,6 +86,10 @@ public class VehicleTypesConsumer : BackgroundService
         catch (OperationCanceledException)
         {
             _logger.LogInformation("Consumption canceled by the host.");
+        }
+        finally
+        {
+            _consumer.Close();
         }
     }
 }

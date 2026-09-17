@@ -21,15 +21,17 @@ IHost host = Host.CreateDefaultBuilder(args)
     {
         var config = context.Configuration;
         string connectionString = config.GetConnectionString("DefaultConnection");
+        var redisCon = config["Redis:ConnectionString"]!;
+        var mongoCon = config["Mongo:ConnectionString"]!;
 
         services.AddDbContext<PiplineDbContext>(options =>
         options.UseMySql(connectionString, Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect(connectionString)));
         
-        services.AddSingleton<IConnectionMultiplexer>(
-            ConnectionMultiplexer.Connect("localhost:6379"));
+        services.AddSingleton<IConnectionMultiplexer>(sp =>
+            ConnectionMultiplexer.Connect(redisCon));
         
         services.AddSingleton<IMongoClient>(
-            new MongoClient("mongodb://root:root@localhost:27017/"));
+            new MongoClient(mongoCon));
 
         services.AddScoped<StationInformationHandler>();
         services.AddScoped<StationStatusHandler>();

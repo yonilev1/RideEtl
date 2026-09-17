@@ -6,8 +6,6 @@ using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
 
 builder.Services.AddExceptionHandler<DataApi.GlobalErrorHandeling.ErrorHandeling>();
@@ -18,24 +16,20 @@ builder.Services.AddProblemDetails();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-IConfiguration config = new ConfigurationBuilder()
-    .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json", optional: false)
-    .Build();
-
-var connectionString = config.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var redisCon = builder.Configuration["Redis:ConnectionString"]!;
+var mongoCon = builder.Configuration["Mongo:ConnectionString"]!;
 
 builder.Services.AddDbContext<PiplineDbContext>(options =>
 options.UseMySql(connectionString, Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect(connectionString)));
 
 builder.Services.AddSingleton<IMongoClient>(
-    new MongoClient("mongodb://root:root@localhost:27017/"));
-
-builder.Services.AddScoped<IGetDataService, GetDataService>();
+    new MongoClient(mongoCon));
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
-ConnectionMultiplexer.Connect("localhost:6379"));
+ConnectionMultiplexer.Connect(redisCon));
 
+builder.Services.AddScoped<IGetDataService, GetDataService>();
 
 builder.Services.AddHttpClient("NominatimClient", client =>
 {

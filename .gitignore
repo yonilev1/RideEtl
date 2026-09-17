@@ -1,4 +1,15 @@
-.vs
-/bin
-/obj
-*.yml
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build results
+[Bb]in/
+[Oo]bj/
+
+# Publish folders (התיקיות שדוקר משתמש בהן)
+**/publish/
+**/out/
+
+# Logs
+*.log

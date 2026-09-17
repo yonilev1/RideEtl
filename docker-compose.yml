@@ -8,10 +8,10 @@ services:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
@@ -28,6 +28,10 @@ services:
       MYSQL_DATABASE: StationVehicleDB
     volumes:
       - mysqldata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
 
   redis:
     image: redis:latest
@@ -43,6 +47,60 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: root
+
+  producer:
+    build:
+      context:
+        ./Producer
+    container_name: producer
+    environment:
+      - DOTNET_ENVIRONMENT=Development
+      - Kafka__BootstrapServers=kafka:9092
+    depends_on:
+      kafka: 
+        condition: service_started
+
+  consumer:
+    build:
+      context:
+        ./Consumer
+    container_name: consumer
+    environment:
+      - DOTNET_ENVIRONMENT=Development
+      - Kafka__BootstrapServers=kafka:9092
+      - ConnectionStrings__DefaultConnection=Server=mysql;Port=3306;Database=StationVehicleDB;Uid=root;Pwd=root;
+      - Redis__ConnectionString=redis:6379,abortConnect=false
+      - Mongo__ConnectionString=mongodb://root:root@mongo:27017/
+    depends_on:
+      kafka:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      mongo:
+        condition: service_started
+
+
+  dataapi:
+    build:
+      context:
+        ./DataApi
+    container_name: dataapi
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=mysql;Port=3306;Database=StationVehicleDB;Uid=root;Pwd=root;
+      - Redis__ConnectionString=redis:6379,abortConnect=false
+      - Mongo__ConnectionString=mongodb://root:root@mongo:27017/
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      mongo:
+        condition: service_started
 
 volumes:
   mysqldata:

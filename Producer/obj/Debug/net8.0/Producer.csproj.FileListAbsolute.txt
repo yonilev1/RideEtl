@@ -79,3 +79,4 @@ C:\Users\Yonil\source\repos\RideEtl\Producer\obj\Debug\net8.0\refint\Producer.dl
 C:\Users\Yonil\source\repos\RideEtl\Producer\obj\Debug\net8.0\Producer.pdb
 C:\Users\Yonil\source\repos\RideEtl\Producer\obj\Debug\net8.0\Producer.genruntimeconfig.cache
 C:\Users\Yonil\source\repos\RideEtl\Producer\obj\Debug\net8.0\ref\Producer.dll
+C:\Users\Yonil\source\repos\RideEtl\Producer\bin\Debug\net8.0\appsettings.json
